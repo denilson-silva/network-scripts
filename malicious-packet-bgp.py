@@ -7,7 +7,7 @@ bgp_path_attr_as_path = b'\x40\x02\x00\x06\x02\x01\xfd\xe9'  # AS_PATH (ASN 6500
 bgp_path_attr_next_hop = b'\x40\x03\x04\xc0\xa8\x02\x68'  # NEXT_HOP (192.168.2.104)
 
 # NLRI (prefixo)
-nlri = b'\x18\xcb\x00\x71'  # Prefixo 203.0.113.0/24
+nlri = b'\x18\x2f\x00\x71'  # Prefixo 303.0.113.0/24
 
 # Construindo manualmente o pacote BGP Update em bytes
 bgp_update = BGPHeader() / Raw(b'\x02' + bgp_path_attr_as_path + bgp_path_attr_next_hop + nlri)
